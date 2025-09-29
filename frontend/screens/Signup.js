@@ -1,14 +1,51 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { signupWithEmailAndPassword } from '../firebase';
 
 export default function Signup({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = () => {
-    // Will implement Firebase signup later
-    console.log('Signup attempted with:', email, password);
+  const handleSignup = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password should be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { user, error } = await signupWithEmailAndPassword(email, password);
+      
+      if (error) {
+        Alert.alert('Error', error);
+        return;
+      }
+
+      if (user) {
+        Alert.alert('Success', 'Account created successfully!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login')
+          }
+        ]);
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

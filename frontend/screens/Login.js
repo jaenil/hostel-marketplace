@@ -1,13 +1,37 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { loginWithEmailAndPassword } from '../firebase';
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Will implement Firebase login later
-    console.log('Login attempted with:', email, password);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { user, error } = await loginWithEmailAndPassword(email, password);
+      
+      if (error) {
+        Alert.alert('Error', error);
+        return;
+      }
+
+      if (user) {
+        // Navigate to main app screen or home screen
+        // navigation.navigate('Home');
+        Alert.alert('Success', 'Logged in successfully!');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
